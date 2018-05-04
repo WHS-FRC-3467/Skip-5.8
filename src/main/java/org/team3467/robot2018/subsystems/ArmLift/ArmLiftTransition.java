@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class ArmLiftTransition extends Command {
 
 	private ArmLift.eArmLiftState	m_targetState;	// Final state we hope to achieve
-	private ArmLift.eArmLiftState	m_nextState;	// Intermediate target state
+	//private ArmLift.eArmLiftState	m_nextState;	// Intermediate target state
 	private boolean					m_toss = false;
 	private boolean					m_finished = false;
 	private int						m_index = 0;
@@ -69,13 +69,13 @@ public class ArmLiftTransition extends Command {
     	}
     	else
     	{
-        	m_nextState = m_states[m_index];    		
+        	m_targetState = m_states[m_index];    		
     	}
     	
-    	SmartDashboard.putString("ArmLift Target State", m_nextState.getName());
+    	SmartDashboard.putString("ArmLift Target State", m_targetState.getName());
      	
-		m_leftTarget = stateCoordinates[m_nextState.getVal()][0];
-		m_rightTarget = stateCoordinates[m_nextState.getVal()][1];
+		m_leftTarget = stateCoordinates[m_targetState.getVal()][0];
+		m_rightTarget = stateCoordinates[m_targetState.getVal()][1];
  
    	}
 
@@ -105,16 +105,16 @@ public class ArmLiftTransition extends Command {
     		// This is not the last state, so we can just get "close enough"
     		if (Robot.armLift.onTarget(true)) {
         	
-            	Robot.armLift.setState(m_nextState);
+            	Robot.armLift.setState(m_targetState);
             	SmartDashboard.putString("ArmLift State", Robot.armLift.getState().getName());
 
             	// Get next target state
     			m_index++;
-            	m_nextState = m_states[m_index];    		
-	        	SmartDashboard.putString("ArmLift Target State", m_nextState.getName());
+            	m_targetState = m_states[m_index];    		
+	        	SmartDashboard.putString("ArmLift Target State", m_targetState.getName());
 	         	
-	    		m_leftTarget = stateCoordinates[m_nextState.getVal()][0];
-	    		m_rightTarget = stateCoordinates[m_nextState.getVal()][1];
+	    		m_leftTarget = stateCoordinates[m_targetState.getVal()][0];
+	    		m_rightTarget = stateCoordinates[m_targetState.getVal()][1];
     		}
    			// Always return false, since we have additional states to run
     		return false;
