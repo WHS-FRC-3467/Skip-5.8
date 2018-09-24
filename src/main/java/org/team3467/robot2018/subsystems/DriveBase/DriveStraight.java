@@ -18,25 +18,30 @@ public class DriveStraight extends Command {
 
 	private static final double TOLERANCE = 50;
 	
+	// Working instance variables
+	// We reinitialize these in initialize() just to make sure
 	private PIDController m_pid;
+	private double m_pastDistance = 0.0;
+	private int m_count = 0;
+//	private double m_initialHeading = 0.0;
+
+	// Instance variables that may be set by one or more constructors
 	private double m_maxSpeed = 0.6;
 	private double m_distance = 0.0;
 	private boolean m_manualCurve = false;
 	private double m_curveValue = 0.0;
-	private double m_pastDistance = 0.0;
-	private int m_count = 0;
-	
 	private double KP = 2.0;
 	private double KI = 0.0;
 	private double KD = 0.0;
 	
-    public DriveStraight(double distance, double maxSpeed, double kp, double ki, double kd) {
+	boolean m_init = false;
+
+	public DriveStraight(double distance, double maxSpeed, double kp, double ki, double kd) {
         
     	requires(Robot.driveBase);
     	KP = kp; KI = ki; KD = kd;
     	m_maxSpeed = maxSpeed;
     	m_distance = distance;
-    	buildController();
     }
 
     public DriveStraight(double distance, double maxSpeed) {
@@ -44,13 +49,11 @@ public class DriveStraight extends Command {
     	requires(Robot.driveBase);
     	m_maxSpeed = maxSpeed;
     	m_distance = distance;
-    	buildController();
     }
 	
 	public DriveStraight(double distance) {
     	requires(Robot.driveBase);
     	m_distance = distance;
-    	buildController();
 	}
 
 	public DriveStraight(double distance, boolean curve, double curveValue) {
@@ -59,15 +62,12 @@ public class DriveStraight extends Command {
 		m_distance = distance;
 		m_manualCurve = curve;
 		m_curveValue = curveValue;
-		
-		buildController();
 	}
 	
 	public DriveStraight(double distance, double maxSpeed, double timeOut) {
 		requires(Robot.driveBase);
 		m_distance = distance;
 		m_maxSpeed = maxSpeed;
-		
 		setTimeout(timeOut);
 	}
 	
@@ -97,10 +97,15 @@ public class DriveStraight extends Command {
 	            			}
 	            			else
 	            			{
-		                		// Drive with the magnitude returned by the PID calculation, 
-		                		// and curve the opposite way from the current yaw reading
+	            				// I think this is the correct approach, but need to fully test it again
+	            				//double headDeviation = Robot.imu.getCurrentAngle() - m_initialHeading;
+	            				
+	            				// Drive with the magnitude returned by the PID calculation, 
+		                		// and curve the opposite way from the current yaw deviation
+	            				// (which conveniently has a sign  opposite of what the drive() method expects!)
 		                		// (Divide currentAngle by some factor so as to normalize to -1.0 / + 1.0)
-	            				Robot.driveBase.drive(d, -(Robot.imu.getCurrentAngle()/240.), false);
+	            				Robot.driveBase.drive(d, (Robot.imu.getCurrentAngle()/240.), false);
+	            				// Robot.driveBase.drive(d, (headDeviation/240.), false);
 	            			}
 	            		}
 	                }
@@ -125,14 +130,30 @@ public class DriveStraight extends Command {
     // Called just before this Command runs the first time
     protected void initialize() {
     	// Get everything in a safe starting state.
+    	m_pastDistance = 0.0;
+    	m_count = 0;
         Robot.driveBase.resetEncoders();
+        
+        // Note the initial robot heading
+        //m_initialHeading = Robot.imu.getCurrentAngle();
         Robot.imu.zeroAngle();
+        
+        buildController();
     	m_pid.reset();
         m_pid.enable();
+ 	
+        m_init = true;
     }
-
+    
+    
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	
+    	if (!m_init) {
+    		initialize();
+    		m_init = true;
+    	}
+    	
     	Robot.driveBase.reportEncoders();
     	
     	if (hasStalled()) {
@@ -144,21 +165,34 @@ public class DriveStraight extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
+    	
+    	boolean retVal = false;
     	double error = m_pid.getError();
     	
     	if (m_count >= 50) {
     		// Robot is definitely stalled - return now
-    		return true;
+    		retVal = true;
     	}
     	else {
-       		return ((error >= 0 && error <= TOLERANCE) || (error < 0 && error >= (-1.0)*TOLERANCE));
+       		retVal = ((error >= 0 && error <= TOLERANCE) || (error < 0 && error >= (-1.0)*TOLERANCE));
     	}
+
+    	if (retVal == true) {
+    		// I suspect that sometimes end() doesn't get called or gets called late,
+    		// allowing the PID loop to run too long, so just take care of business here
+	    	m_pid.disable();
+	        Robot.driveBase.drive(0, 0, false);
+    	}
+    	return retVal;
+    
     }
 
     // Called once after isFinished returns true
     protected void end() {
     	// Stop PID and the wheels
+    	m_init = false;
     	m_pid.disable();
+    	m_pid.free();
         Robot.driveBase.drive(0, 0, false);
     }
 

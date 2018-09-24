@@ -12,12 +12,12 @@ import edu.wpi.first.wpilibj.command.CommandGroup;
 import edu.wpi.first.wpilibj.command.WaitCommand;
 
 /**
- *  Drive straight ahead for specified distance
+ *  Drive to left side of switch, turn 90 deg and drop in Cube
  */
 
-public class AutoRightSwitch extends CommandGroup {
+public class AutoLeftSwitch_Side extends CommandGroup {
 
-    public  AutoRightSwitch() {
+    public  AutoLeftSwitch_Side() {
 
     	// Brakes off
     	addSequential(new SetBrakeMode(false));
@@ -32,13 +32,16 @@ public class AutoRightSwitch extends CommandGroup {
    // 	addSequential(new SetBrakeMode(true));
     	
     	// Turn 90 degrees toward switch
-    	addSequential(new DriveTurn(90.0, 0.35));
+    	addSequential(new DriveTurn(-90.0, 0.35));
+    	
+    	// Wait to settle
+    	addSequential(new WaitCommand(1.0));    	
     	
     	// Raise arm
     	addSequential(new ArmLiftTransition(ArmLift.eArmLiftState.SwitchFront, false));
 
     	// Drive to switch
-    	addSequential(new DriveStraight(10000, 0.4));
+    	addSequential(new DriveStraight(12000, 0.4));
     	
     	// Wait to settle
     	addSequential(new WaitCommand(1.0));    	
@@ -47,11 +50,6 @@ public class AutoRightSwitch extends CommandGroup {
     	addSequential(new OpenHands());
     	addSequential(new WaitCommand(2.0));
     	addSequential(new CloseHands());
-    	
-    	// Back away
-    	
-    	// Turn toward scale
-    	
-    	
+  	
     }
 }

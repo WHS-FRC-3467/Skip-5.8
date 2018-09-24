@@ -27,9 +27,8 @@ public class DriveTurn extends Command {
     	requires(Robot.driveBase);
 		
 		m_maxSpeed = maxspeed;
-		m_turnAngle = angle;
+		m_turnAngle = angle;	// Angle to turn from current position. Pigeon IMU reads Clockwise as NEGATIVE.
 		
-		buildController();
     }
     
     private void buildController() {
@@ -65,8 +64,12 @@ public class DriveTurn extends Command {
     // Called just before this Command runs the first time
     protected void initialize() {
 
-    	m_pid.setSetpoint(Robot.imu.getCurrentAngle() + m_turnAngle);
-      	m_pid.reset();
+		buildController();
+		
+    	// Remember: Pigeon IMU reports clockwise turn as NEGATIVE displacement
+		m_pid.setSetpoint(Robot.imu.getCurrentAngle() + m_turnAngle);
+
+		m_pid.reset();
     	m_pid.enable();
     }
 
@@ -80,12 +83,22 @@ public class DriveTurn extends Command {
     protected boolean isFinished() {
 
     	double error = m_pid.getError();
-   		return ((error >= 0 && error <= TOLERANCE) || (error < 0 && error >= (-1.0)*TOLERANCE));
+   		boolean retVal = ((error >= 0 && error <= TOLERANCE) || (error < 0 && error >= (-1.0)*TOLERANCE));
+   		
+   		if (retVal == true) {
+    		// I suspect that sometimes end() doesn't get called or gets called late,
+    		// allowing the PID loop to run too long, so just take care of business here
+	    	m_pid.disable();
+	        Robot.driveBase.drive(0, 0, false);
+   		}
+   		return retVal;
     }
 
     // Called once after isFinished returns true
     protected void end() {
     	m_pid.disable();
+    	m_pid.free();
+
         Robot.driveBase.drive(0, 0, false);
     }
 

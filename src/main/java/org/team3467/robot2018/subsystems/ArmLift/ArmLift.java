@@ -181,8 +181,8 @@ public class ArmLift extends Subsystem {
     	int rightAllowable = m_rightTalon.getTolerance();
     	
     	if (closeEnough) {
-    		leftAllowable += 30;
-    		rightAllowable += 30;
+    		leftAllowable += 20;
+    		rightAllowable += 20;
     	}
     		
 		return (((leftError >= 0 && leftError <= leftAllowable) ||

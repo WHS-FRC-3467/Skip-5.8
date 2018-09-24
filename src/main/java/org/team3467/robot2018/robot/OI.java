@@ -1,6 +1,6 @@
 package org.team3467.robot2018.robot;
 
-import org.team3467.robot2018.robot.autonomous.AutoRightSwitch;
+import org.team3467.robot2018.robot.autonomous.AutoRightSwitch_Front;
 import org.team3467.robot2018.robot.control.ButtonBox;
 import org.team3467.robot2018.robot.control.ButtonBoxButton;
 import org.team3467.robot2018.robot.control.XboxController;
@@ -173,7 +173,7 @@ public class OI {
 		SmartDashboard.putData("Drive Turn 90", new DriveTurn(90.0, 0.4));
 		SmartDashboard.putData("Drive Turn -90", new DriveTurn(-90.0, 0.4));
 		SmartDashboard.putData("Drive Straight", new DriveStraight(30000));
-		SmartDashboard.putData("Do Left Switch", new AutoRightSwitch());
+		SmartDashboard.putData("Do Left Switch", new AutoRightSwitch_Front());
 		
 		SmartDashboard.putData("Zero Gyro", new ZeroGyro());
 

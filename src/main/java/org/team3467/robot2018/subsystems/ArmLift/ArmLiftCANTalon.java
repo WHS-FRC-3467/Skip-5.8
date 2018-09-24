@@ -52,7 +52,7 @@ public class ArmLiftCANTalon extends TalonSRX {
     private double m_setpoint = 0.0;
     
 	// Default PIDF constants - see CTRE documentation for tuning procedure
-	private double m_P = 3.0;     // factor for "proportional" control
+	private double m_P = 2.5;     // factor for "proportional" control
     private double m_I = 0.015;     // factor for "integral" control
     private double m_D = 0.5;     // factor for "derivative" control
     private double m_F = 0.527;     // factor for feedforward term

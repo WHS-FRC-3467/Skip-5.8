@@ -6,9 +6,14 @@ import org.team3467.robot2018.subsystems.IMU.IMU;
 import org.team3467.robot2018.subsystems.ArmLift.ArmLift;
 import org.team3467.robot2018.subsystems.DriveBase.DriveBase;
 import org.team3467.robot2018.subsystems.Pneumatics.Pneumatics;
-import org.team3467.robot2018.robot.autonomous.AutoRightSwitch;
+import org.team3467.robot2018.robot.autonomous.AutoRightSwitch_Front;
+import org.team3467.robot2018.robot.autonomous.AutoRightSwitch_Middle;
+import org.team3467.robot2018.robot.autonomous.AutoRightSwitch_Side;
 import org.team3467.robot2018.robot.autonomous.AutoDriveForward;
-import org.team3467.robot2018.robot.autonomous.AutoLeftSwitch;
+import org.team3467.robot2018.robot.autonomous.AutoDriveForwardAngle;
+import org.team3467.robot2018.robot.autonomous.AutoLeftSwitch_Front;
+import org.team3467.robot2018.robot.autonomous.AutoLeftSwitch_Middle;
+import org.team3467.robot2018.robot.autonomous.AutoLeftSwitch_Side;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -64,6 +69,9 @@ public class Robot extends TimedRobot {
 		pneumatics = Pneumatics.getInstance();
 		imu = IMU.getInstance();
 		
+		// Zero the gyro here
+		imu.zeroAngle();
+		
 		oi = OI.getInstance();
 		oi.BindCommands();
 
@@ -77,15 +85,11 @@ public class Robot extends TimedRobot {
  		chooser = new SendableChooser<String>();
 
 		chooser.addDefault("Drive Forward (Default)", "DriveForward");
-        chooser.addObject("Left Switch Only", "LeftSwitchOnly");
-        chooser.addObject("Left Scale Only", "LeftScaleOnly");        
-        chooser.addObject("Left Switch Priority", "LeftSwitchPriority");
-        chooser.addObject("Left Scale Priority", "LeftScalePriority");        
-        chooser.addObject("Right Switch Only", "RightSwitchOnly");
-        chooser.addObject("Right Scale Only", "RightScaleOnly");        
-        chooser.addObject("Right Switch Priority", "RightSwitchPriority");
-        chooser.addObject("Right Scale Priority", "RightScalePriority");
         chooser.addObject("Middle Switch", "MiddleSwitch");
+        chooser.addObject("Left Switch from Front", "LeftSwitchFront");
+        chooser.addObject("Left Switch from Side", "LeftSwitchSide");
+        chooser.addObject("Right Switch from Front", "RightSwitchFront");
+        chooser.addObject("Right Switch from Side", "RightSwitchSide");
         chooser.addObject("Do Nothing", "AutoDoNothing");
         SmartDashboard.putData("Autonomous Mode", chooser);
         
@@ -182,7 +186,7 @@ public class Robot extends TimedRobot {
 	   
 	   String chooserCommand = chooser.getSelected();
 
-       if((chooserCommand == null) || (chooserCommand.equals("AutoDoNothing")))
+	   if((chooserCommand == null) || (chooserCommand.equals("AutoDoNothing")))
        {
     	   autoCommand = null;
        }
@@ -195,105 +199,55 @@ public class Robot extends TimedRobot {
                 autoCommand = new AutoDriveForward();
                 break;
 
-         	case "LeftSwitchOnly":
- 
-            	if (ourSwitch == MatchData.OwnedSide.LEFT) {
-            		autoCommand = new AutoLeftSwitch();
-            	}
-            	else
-            		autoCommand = new AutoDriveForward();
-            	break;
-            	
-        	case "LeftScaleOnly":        
-            	if (ourScale == MatchData.OwnedSide.LEFT) {
-//            		autoCommand = new AutoLeftScale()
-            		;
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-        		
-        	case "LeftSwitchPriority":
-            	if (ourSwitch == MatchData.OwnedSide.LEFT) {
-            		autoCommand = new AutoLeftSwitch();
-            	}
-            	else if (ourScale == MatchData.OwnedSide.LEFT) {
-//            		autoCommand = new AutoLeftScale()
-            		;
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-            		
-        	case "LeftScalePriority":        
-            	if (ourScale == MatchData.OwnedSide.LEFT) {
-//            		autoCommand = new AutoLeftScale()
-            		;
-            	}
-            	else if (ourSwitch == MatchData.OwnedSide.LEFT) {
-            		autoCommand = new AutoLeftSwitch();
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-        		
-        	case "RightSwitchOnly":
-            	if (ourSwitch == MatchData.OwnedSide.RIGHT) {
-            		autoCommand = new AutoRightSwitch();
-            	}
-            	else
-            		autoCommand = new AutoDriveForward();
-            	break;
-            	
-        	case "RightScaleOnly":        
-            	if (ourScale == MatchData.OwnedSide.RIGHT) {
-//            		autoCommand = new AutoRightScale()
-            		;
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-        		
-        	case "RightSwitchPriority":
-            	if (ourSwitch == MatchData.OwnedSide.RIGHT) {
-            		autoCommand = new AutoRightSwitch();
-            	}
-            	else if (ourScale == MatchData.OwnedSide.RIGHT) {
-//            		autoCommand = new AutoRightScale()
-            		;
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-            		
-        	case "RightScalePriority":
-            	if (ourScale == MatchData.OwnedSide.RIGHT) {
-//            		autoCommand = new AutoRightScale()
-            		;
-            	}
-            	else if (ourSwitch == MatchData.OwnedSide.RIGHT) {
-            		autoCommand = new AutoRightSwitch();
-                }
-            	else
-            		autoCommand = new AutoDriveForward();
-        		break;
-        		
         	case "MiddleSwitch":
             	if (ourSwitch == MatchData.OwnedSide.LEFT) {
-//            		autoCommand = new AutoMiddleSwitchLeft()
-            		;
+            		autoCommand = new AutoLeftSwitch_Middle();
             	}
             	else if (ourSwitch == MatchData.OwnedSide.RIGHT) {
-//            		autoCommand = new AutoMiddleSwitchRight()
-            		;
+            		autoCommand = new AutoRightSwitch_Middle();
                 }
             	else
-//            		autoCommand = new AutoAngleDriveForward();
+            		// Should never have to do this
+            		autoCommand = new AutoDriveForwardAngle();
+        		break;
+
+        	case "LeftSwitchFront":
+ 
+            	if (ourSwitch == MatchData.OwnedSide.LEFT) {
+            		autoCommand = new AutoLeftSwitch_Front();
+            	}
+            	else
+            		autoCommand = new AutoDriveForward();
+            	break;
+            	
+        	case "LeftSwitchSide":
+
+        		if (ourSwitch == MatchData.OwnedSide.LEFT) {
+            		autoCommand = new AutoLeftSwitch_Side();
+            	}
+            	else
             		autoCommand = new AutoDriveForward();
         		break;
-        	}
+            		
+        	case "RightSwitchFront":
+            	if (ourSwitch == MatchData.OwnedSide.RIGHT) {
+            		autoCommand = new AutoRightSwitch_Front();
+            	}
+            	else
+            		autoCommand = new AutoDriveForward();
+            	break;
+            	
+        	case "RightSwitchSide":
+            	if (ourSwitch == MatchData.OwnedSide.RIGHT) {
+            		autoCommand = new AutoRightSwitch_Side();
+            	}
+            	else
+            		autoCommand = new AutoDriveForward();
+        		break;
+        	}		
         }
-
+       
+        SmartDashboard.putString("Chosen Auto", chooserCommand);
        	return autoCommand;
     }
 

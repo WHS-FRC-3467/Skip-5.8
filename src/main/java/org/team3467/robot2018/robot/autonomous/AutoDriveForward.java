@@ -17,7 +17,7 @@ public class AutoDriveForward extends CommandGroup {
     	addSequential(new SetBrakeMode(false));
 
     	// Drive
-    	addSequential(new DriveStraight(65000, 0.7));
+    	addSequential(new DriveStraight(65000, 0.6));
     	
     	// After we stop, turn brakes back on
  //   	addSequential(new SetBrakeMode(true));
